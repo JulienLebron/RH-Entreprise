@@ -17,7 +17,7 @@ class EntityRepository
             try
             {
                 // simplexml_load_file() : fonction prédéfinie de PHP qui permet de charger un fichier XML et retourne un objet PHP SimpleXMLElement contenant toutes les informations du fichier
-                $xml = simplexml_load_file('../app/config.xml');
+                $xml = simplexml_load_file('app/config.xml');
                 // echo '<pre>'; print_r($xml); echo '</pre>';
 
                 // On affecte le nom de la table récupéré via le fichier XML
@@ -46,6 +46,45 @@ class EntityRepository
         }
         // print_r($this->db);
         return $this->db;
+    }
+
+    // Méthode permettant de sélectionner l'ensemble des employes dans la table "employes"
+    public function selectAllEntityRepo()
+    {
+        // $data(réponse de la BDD = PDOStatement) = PDO->query(requête SQL)
+        $data = $this->getDb()->query("SELECT * FROM " . $this->table);
+        // $r (résultat traité par la méthode fetchAll() avec un mode FETCH_ASSOC)
+        $r = $data->fetchAll(\PDO::FETCH_ASSOC);
+        return $r;
+    }
+
+    // Méthode permettant de sélectionner tout les noms des colonnes de la table "employes"
+    public function getFields()
+    {
+        $data = $this->getDb()->query("DESC " . $this->table);
+        $r = $data->fetchAll(\PDO::FETCH_ASSOC);
+        return array_slice($r,1);
+    }
+
+    // Méthode permettant de sélectionner un employé dans la BDD en fonction de son ID
+    public function selectEntityRepo($id)
+    {
+        $data = $this->getDb()->query("SELECT * FROM " . $this->table . " WHERE id_" . $this->table . " = " . $id);
+        $r = $data->fetch(\PDO::FETCH_ASSOC);
+        return $r;
+    }
+
+    // Méthode permettant de supprimer un employé de la BDD en fonction de son ID
+    public function deleteEntityRepo($id)
+    {
+        $q = $this->getDb()->query('DELETE FROM ' . $this->table . ' WHERE id_' . $this->table . ' = ' . $id);
+    }
+
+    // Méthode permettant d'ajouter ou de modifier un employé
+    public function saveEntityRepo()
+    {
+        $id = isset($_GET['id']) ? $_GET['id'] : 'NULL';
+        $q = $this->getDb()->query('REPLACE INTO ' . $this->table . '(id_' . $this->table . ',' . implode(',', array_keys($_POST)) . ') VALUES (' . $id . ',' . "'" . implode("','", $_POST) . "'" . ')');
     }
 }
 
