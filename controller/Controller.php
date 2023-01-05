@@ -19,7 +19,6 @@ class Controller
 
         // On stocke la valeur de l'indice "op" transmis dans l'url
         $op = isset($_GET['op']) ? $_GET['op'] : NULL;
-        $alert = !empty($_GET['alert']) ? $_GET['alert'] : NULL;
 
         try
         {
@@ -29,8 +28,10 @@ class Controller
                 $this->select(); // si on sélectionne un employé, la méthode select() sera exécutée
             elseif($op == 'delete')
                 $this->delete(); // si on supprime un employé, la méthode delete() sera exécutée
+            elseif($op == 'recherche')
+                $this->recherche(); 
             else
-                $this->selectAll($alert); // Dans les autres cas, nous voulons afficher l'ensemble des employés, la méthode selectAll() qui sera exécutée
+                $this->selectAll(); // Dans les autres cas, nous voulons afficher l'ensemble des employés, la méthode selectAll() qui sera exécutée
 
         }
         catch(\Exception $e)
@@ -61,12 +62,19 @@ class Controller
     }
 
     // Méthode permettant d'afficher tous les employés
-    public function selectAll($alert)
+    public function selectAll()
     {
         $id = isset($_GET['id']) ? $_GET['id'] : NULL;
-        $confirmation = (!empty($alert)) ? "✅ L'action sur l'employé n°$id à été effectuer avec succès !" : '';
+        if(isset($_GET['id']))
+        {
+            $confirmation = (!empty($id)) ? "✅ L'employé n°$id à été modifié avec succès !" : "✅ Création de l'employé effectué avec succès !";
+        }
+        else
+        {
+            $confirmation = '';
+        }
         $this->render('layout.php', 'affichage-employes.php', [
-            'title' => 'Affichage de tous les employes',
+            'title' => 'GESTION DES EMPLOYES',
             'data' => $this->dbEntityRepository->selectAllEntityRepo(),
             'fields' => $this->dbEntityRepository->getFields(),
             'id' => 'id_' . $this->dbEntityRepository->table,
@@ -80,7 +88,7 @@ class Controller
     {
         $id = isset($_GET['id']) ? $_GET['id'] : NULL;
         $this->render('layout.php', 'detail-employe.php', [
-            'title' => "Affichage du détail d'un employé",
+            'title' => "INFORMATION",
             'data' => $this->dbEntityRepository->selectEntityRepo($id),
             'id' => 'id_' . $this->dbEntityRepository->table,
             'message' => "Ci dessous vous trouverez le détail de l'employé n°$id"
@@ -94,7 +102,7 @@ class Controller
         $res = $this->dbEntityRepository->deleteEntityRepo($id);
         
         $this->render('layout.php', 'affichage-employes.php', [
-            'title' => 'Affichage de tous les employes',
+            'title' => 'GESTION DES EMPLOYES',
             'data' => $this->dbEntityRepository->selectAllEntityRepo(),
             'fields' => $this->dbEntityRepository->getFields(),
             'id' => 'id_' . $this->dbEntityRepository->table,
@@ -118,16 +126,33 @@ class Controller
         if($_POST)
         {
             $res = $this->dbEntityRepository->saveEntityRepo();
-            $this->redirect("?alert=true&id=$id");
+            $this->redirect("?id=$id");
         }
 
         $this->render('layout.php', 'contact-form.php', [
-            'title' => "Formulaire",
+            'title' => "AJOUTER / MODIFIER",
             'op' => $op,
             'fields' => $this->dbEntityRepository->getFields(),
             'values' => $values,
             'message' => "Ci-dessous vous trouverer le formulaire pour ajouter ou modifier un employé"
         ]);
+    }
+
+    // Méthode permettant de rechercher un employé
+    public function recherche()
+    {
+        if($_POST)
+        {
+            $this->render('layout.php', 'recherche.php', [
+                'title' => "RESULTAT",
+                'result' => $this->dbEntityRepository->rechercheEntityRepo($_POST['recherche']),
+                'message' => "Ci-dessous vous trouverez les résultats de votre recherche"
+            ]);
+        }
+        else
+        {
+            $this->redirect('?op=null');
+        }
     }
 }
 

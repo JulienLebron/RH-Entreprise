@@ -86,11 +86,32 @@ class EntityRepository
         $id = isset($_GET['id']) ? $_GET['id'] : 'NULL';
         $q = $this->getDb()->query('REPLACE INTO ' . $this->table . '(id_' . $this->table . ',' . implode(',', array_keys($_POST)) . ') VALUES (' . $id . ',' . "'" . implode("','", $_POST) . "'" . ')');
     }
+
+    // Méthode permettant de rechercher un employé
+    public function rechercheEntityRepo($value)
+    {
+        $valeur = '%' . $value . '%';
+        $data = $this->getDb()->query('SELECT * FROM ' . $this->table . ' WHERE nom LIKE "' . $valeur . '" OR prenom LIKE "' . $valeur . '"');
+        if($data->rowCount() == 0)
+        {
+            $r = '';
+        }
+        else
+        {
+            $r = $data->fetchAll(\PDO::FETCH_ASSOC);
+        }
+        return $r;
+        }
 }
-
-// TEST
-
-// $e = new EntityRepository;
+    
+    // TEST
+    
+    // $e = new EntityRepository;
+    // }
+    // elseif($data->rowCount() == 1)
+    // {
+    //     $r = $data->fetch(\PDO::FETCH_ASSOC);
+    // }
 // $e->getDb();
 
 
